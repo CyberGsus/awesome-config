@@ -20,6 +20,13 @@ local name = function(asset_type, name)
   return name
 end
 
+icons.aw_icon = function(a, b, c, theme_path)
+  os.execute(string.format("python ~/.config/awesome/commons/setup-icon '%s' '%s' '%s' '%s",
+    a, b, c, theme_path
+  ))
+  return theme_path .. 'awesome_icon.png'
+end
+
 icons.asset = function(asset_fmt, asset_name, asset_type)
   if asset_type == nil then
     asset_type = 'normal'

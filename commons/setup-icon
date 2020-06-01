@@ -1,0 +1,17 @@
+#!venv/bin/python
+#vim: ft=python
+
+import numpy as np
+from PIL import Image
+import argparse
+
+origin_image = '/home/cyber/.local/share/icons/awesome-icon.svg'
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('menu_height')
+    parser.add_argument('foreground')
+    parser.add_argument('background')
+
+    args = parser.parse_args()
+
