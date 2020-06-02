@@ -1,0 +1,224 @@
+#!/usr/bin/env python
+# vim: ft=python
+import argparse
+import re
+import os
+from collections import namedtuple
+import logging
+
+
+class ColorFormatter(logging.Formatter):
+    colors = {
+        "WARNING": 220,
+        "INFO": 118,
+        "DEBUG": 39,
+        "ERROR": 214,
+        "CRITICAL": 196,
+    }
+
+    color_dict = {str(k): "\x1b[38;5;%dm" % k for k in range(256)}
+
+    def reset(self, record):
+        return "\x1b[0m"
+
+    def bold(self, record):
+        return "\x1b[4m"
+
+    def pattern(self, pattern_name, *args):
+        return getattr(self, pattern_name)(*args)
+
+    def produce_dict(self, record):
+        dkt = {
+            "color": "\x1b[38;5;%dm" % self.colors[record.levelname],
+            "bold": "\x1b[1m",
+            "under": "\x1b[4m",
+            "underline": "\x1b[4m",
+            "reset": "\x1b[m",
+        }
+        dkt.update(self.color_dict)
+        dkt.update(record.__dict__)
+        # Make sure message is formatted too ;)
+        dkt.update({"message": record.getMessage() % dkt})
+        return dkt
+
+    def format(self, record):
+        message = self._fmt % self.produce_dict(record)
+        return "\x1b[m" + message + "\x1b[m"
+
+
+def setup_logger(logger, level=logging.INFO):
+    handler = logging.StreamHandler()
+    formatter = ColorFormatter(
+        "%(color)s %(levelname)s %(bold)s [%(filename)s:%(funcName)s()] %(reset)s%(message)s"
+    )
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(level)
+
+
+class MultiDict:
+    def __init__(self):
+        self._dict = {}
+
+    def keys(self):
+        return self._dict.keys()
+
+    def items(self):
+        return self._dict.items()
+
+    def values(self):
+        return self._dict.values()
+
+    def __getitem__(self, key):
+        if key not in self._dict:
+            raise KeyError(key)
+        return self._dict[key]
+
+    def __setitem__(self, key, val):
+        if key not in self._dict:
+            self._dict[key] = []
+        self._dict[key].append(val)
+
+    def __repr__(self):
+        return repr(self._dict)
+
+    def __str__(self):
+        return str(self._dict)
+
+
+log = logging.getLogger(__name__)
+setup_logger(log, level=logging.DEBUG)
+
+try:
+    from cairosvg import svg2png
+except ImportError:
+    if not os.path.exists("venv"):
+        print("Make sure you have run ./setup.sh (linux)!")
+    else:
+        print("Make sure you have run 'source venv/bin/activate'!")
+    exit(1)
+
+
+SCRIPT_PATH = "/".join(__file__.split("/")[:-1])
+
+origin_image = SCRIPT_PATH + "/awesome-icon.svg"
+log.info(f"Using origin image %(213)s {origin_image}")
+color_pat = r"#[0-9a-fA-F]{6}"
+
+
+def color(
+    t, pat=re.compile(r"^#(?:[0-9a-f]{2}){3,4}$", re.IGNORECASE,),
+):
+    if not pat.match(t):
+        raise argparse.ArgumentTypeError(
+            "Should be in format #rrggbb[aa], case insensitive"
+        )
+
+    return (
+        t[:7],
+        int(t[7:] or "ff", 16) / 255,
+    )
+
+
+def svg_to_png(theme_path, contents):
+    file_path = os.path.join(theme_path, "awesome-icon.png")
+    with open('test.svg', 'w') as f: f.write(contents)
+    log.info("Saving icon into %(213)s {}".format(file_path))
+    svg2png(bytestring=contents, write_to=file_path)
+
+
+def all_matches(pattern, st):
+    end = 0
+    while (m := re.search(pattern, st[end:])) is not None:
+        yield m
+        end += m.end()
+
+
+def parse_tags(contents):
+    tags = MultiDict()
+    for tag in re.finditer(r"<([^\/\r\n\s]+)([^>\r\n]*)>", contents, re.M):
+        tags[tag.group(1)] = get_tag_properties(tag.group())
+
+    return tags
+
+
+def assemble_tag(tag_dict):
+    for key in tag_dict.keys():
+        tag_str = f"<{key} "
+        for tag in tag_dict[key]:
+            yield tag_str + " ".join(
+                f"{k}={v!r}" for k, v in tag.items()
+            ) + f">"
+
+
+def complete_assemble_tag(tag_dict):
+    return [*assemble_tag(tag_dict)]
+
+
+def get_tag_properties(tag):
+    return {
+        prop.group(1): prop.group(2)
+        for prop in re.finditer(
+            r"([\w-]+)=[\'\"]([^\'\"\r\n]+)[\'\"]", tag, re.M
+        )
+    }
+
+
+property_separator = r"([\w-]+)=[\'\"]([^\'\"\r\n]+)[\'\"]"
+
+# def get_properties(tag, pattern=r"([\w]+)=[\'\"]([^\'\"\r\n]+)[\"\']"):
+#     for m in re.finditer(pattern, tag):
+#         yield m.groups()
+
+
+def replace_info(contents, image_width, fg = '', bg = ''):
+    cline = "".join(contents[1])
+    log.debug('Replacing size info')
+    svg_tag = get_tag_properties(cline)
+    svg_tag["width"] = f"{image_width}px"
+    svg_tag["height"] = f"{image_width}px"
+    contents[1] = [*assemble_tag({"svg": [svg_tag]})][0]
+
+    log.debug('Replacing foreground info')
+    path_tag = get_tag_properties(''.join(contents[8]))
+    path_tag['fill'] = fg[0]
+    assembled = [s for s in [*assemble_tag({'path' : [path_tag]})][0]]
+    assembled.insert(-1, '/')
+    assembled = ''.join(assembled)
+    contents[8] = assembled
+
+
+
+    return "\n".join("".join(l) for l in contents)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("theme_name")
+    parser.add_argument(
+        "menu_height", type=int, help="(int)",
+    )
+    parser.add_argument("foreground", type=color)
+    parser.add_argument("background", type=color)
+
+    args = parser.parse_args()
+    log.debug(args)
+
+    theme_path = os.path.expanduser(
+        "~/.config/awesome/themes/" + args.theme_name
+    )
+
+    with open(origin_image) as f:
+        contents = [[*line] for line in f.read().split("\n")]
+
+    log.info(f"Replacing info in svg...")
+
+    contents = replace_info(contents, args.menu_height, args.foreground, args.background)
+
+    # Replace size
+
+    svg_to_png(theme_path, contents)
+
+
+if __name__ == "__main__":
+    main()

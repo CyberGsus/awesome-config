@@ -20,11 +20,15 @@ local name = function(asset_type, name)
   return name
 end
 
-icons.aw_icon = function(a, b, c, theme_path)
-  os.execute(string.format("python ~/.config/awesome/commons/setup-icon '%s' '%s' '%s' '%s",
-    a, b, c, theme_path
+icons.themes_path = function()
+  return string.format('%s/.config/awesome/themes/', os.getenv('HOME'))
+end
+
+icons.aw_icon = function(size, fg, bg, theme_name, themes_dir)
+  os.execute(string.format("sh ~/.config/awesome/commons/update-icon.sh \"%s\" \"%s\" \"%s\" \"%s\"",
+    theme_name, size, fg, bg
   ))
-  return theme_path .. 'awesome_icon.png'
+  return  themes_dir  .. theme_name .. '/' .. 'awesome-icon.png'
 end
 
 icons.asset = function(asset_fmt, asset_name, asset_type)

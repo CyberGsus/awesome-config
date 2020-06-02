@@ -7,7 +7,6 @@ local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
 
 local gfs = require("gears.filesystem")
-local themes_path = gfs.get_themes_dir()
 
 
 -- package.path = package.path .. themes_path .. '/?'
@@ -16,6 +15,7 @@ local color_utils = require ('commons/color_utils')
 local colors      = require ('commons/colors').load_colors('cyber')
 local icons       = require ('commons/icons')
 
+local themes_path = icons.themes_path()
 local getfont = function (font_name, size, ...)
     if size == nil then size = 10 end
     if font_name == nil then return '' end
@@ -34,7 +34,7 @@ local theme = {}
 local FONT_NORMAL   = 'IBM Plex Mono'
 local FONT_MONO     = 'Jetbrains Mono'
 
-theme.font          = getfont(FONT_NORMAL, 10, 'Bold', 'Italic')
+theme.font          = getfont(FONT_NORMAL, dpi(9), 'Bold', 'Italic')
 
 theme.bg_normal     = colors.dark[1]
 theme.bg_focus      = colors.dark[1] -- color_utils.apply_direct_alpha(colors.light[1], 0.075)
@@ -189,9 +189,13 @@ theme.layout_cornersw = themes_path.."default/layouts/cornersww.png"
 theme.layout_cornerse = themes_path.."default/layouts/cornersew.png"
 
 -- Generate Awesome icon:
-theme.awesome_icon = theme_assets.awesome_icon(
+theme.awesome_icon =  icons.aw_icon(theme.menu_height, theme.fg_focus, theme.bg_focus, 'cyber', themes_path)
+f = io.open(string.format('%s/test.txt', os.getenv('HOME')), 'w')
+f:write(theme.awesome_icon .. '\n')
+f:close()
+--[[theme_assets.awesome_icon(
 theme.menu_height, theme.bg_focus, theme.fg_focus
-)
+) --]]
 
 -- Define the icon theme for application icons. If not set then the icons
 -- from /usr/share/icons and /usr/share/icons/hicolor will be used.
