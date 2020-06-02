@@ -190,9 +190,6 @@ theme.layout_cornerse = themes_path.."default/layouts/cornersew.png"
 
 -- Generate Awesome icon:
 theme.awesome_icon =  icons.aw_icon(theme.menu_height, theme.fg_focus, theme.bg_focus, 'cyber', themes_path)
-f = io.open(string.format('%s/test.txt', os.getenv('HOME')), 'w')
-f:write(theme.awesome_icon .. '\n')
-f:close()
 --[[theme_assets.awesome_icon(
 theme.menu_height, theme.bg_focus, theme.fg_focus
 ) --]]
