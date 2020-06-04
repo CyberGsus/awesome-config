@@ -42,7 +42,10 @@ theme.bg_urgent     = colors.dark[1]
 theme.bg_minimize   = colors.dark[1] -- color_utils.apply_direct_alpha(colors.primary[1], 0.5)
 theme.bg_systray    = theme.bg_normal
 
-theme.fg_normal     = colors.grey[1]
+theme.fg_normal     = color_utils.apply_direct_alpha(colors.light[1], 0.5) --color_utils.apply_alpha(colors.secondary[1], '#aaaaaa', 0.1)
+local f = io.open('/home/cyber/test2.txt', 'w')
+f:write(theme.fg_normal)
+f:close()
 theme.fg_focus      = colors.primary[1]
 theme.fg_urgent     = color_utils.apply_direct_alpha('#ff0000', 0.75)
 theme.fg_minimize   = color_utils.apply_direct_alpha(colors.secondary[1], 0.5)
@@ -69,6 +72,8 @@ theme.border_marked = colors.secondary[1]
 
 -- Taglist
 theme.taglist_bg_focus          = color_utils.apply_alpha(theme.bg_normal, '#aaaaaa', 0.1)
+theme.taglist_fg_occupied       = colors.grey[1]
+theme.taglist_fg_normal         = colors.grey[1]
 theme.taglist_fg_empty          = theme.bg_normal
 
 -- Window titles
