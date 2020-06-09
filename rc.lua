@@ -20,7 +20,7 @@ local hotkeys_popup = require("awful.hotkeys_popup")
 require("awful.hotkeys_popup.keys")
 
 
-local keyboard = require ('widgets/keyboard')
+local widgets = require ('widgets')
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -58,7 +58,7 @@ do
   end
   )
 end
--- }}}
+
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
@@ -94,7 +94,6 @@ awful.layout.layouts = {
   -- awful.layout.suit.corner.se,
 }
 -- }}}
-
 -- {{{ Menu
 -- Create a launcher widget and a main menu
 myawesomemenu = {
@@ -132,7 +131,7 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- }}}
 
 -- Keyboard map indicator and switcher
-mykeyboardlayout = keyboard.build()
+mykeyboardlayout = widgets.keyboard.build()
 
 
 
@@ -156,162 +155,36 @@ function indexOf(tbl, t)
   return -1
 end
 
+local colors = require ('commons/colors').load_colors('cyber')
+
+
+local color_n = true
+function get_color()
+  local color
+  if color_n then
+    color = colors.primary[1]
+  else
+    color = colors.secondary[1]
+  end
+  color_n = not color_n
+  return color
+end
+
+-- widgets/utils.lua
+local span = require ('widgets/utils').span
+
+local colors = require ('commons/colors').load_colors('cyber')
 
 
 -- {{{ Wibar
 -- Create a textclock widget
-mytextclock = wibox.widget.textclock("%a %b %d [ %T ]", 1)
-
-function script(name)
-  return string.format("%s/.config/awesome/scripts/%s", os.getenv("HOME"), name)
-end
-
-local function formatBytes(bytes)
-  local tag='B'
-  local amount=bytes
-  if amount / 1024 >= 1 then
-    tag='KiB'
-    amount = amount / 1024
-  end
-  if amount / 1024 >= 1 then
-    tag='MiB'
-    amount = amount / 1024
-  end
-  if amount / 1024 >= 1 then
-    tag='GiB'
-    amount = amount / 1024
-  end
-  if amount / 1024 >= 1 then
-    tag='TiB'
-    amount = amount / 1024
-  end
-  if amount / 1024 >= 1 then
-    tag='PiB'
-    amount = amount / 1024
-  end
-
-  return string.format("%.2f %s", amount, tag)
-end
-
-function wifi_widget(timeout)
-  local widg = awful.widget.watch(string.format("%s %s", 'sh', script('internet')), timeout or 3)
-  -- Adapted from LukeSmithxyz/voidrice/.local/bin/statusbar/internet
-  widg:connect_signal('button::press', function(lx, ly, _, button)
-    if button == 1 then
-      awful.spawn(terminal .. ' -e nm-connection-editor')
-    end
-    if button == 3 then
-      naughty.notify({
-        title = '🌐 Internet module - Click to connect',
-        text  = '📡: no wifi connection\n📶: wifi connection with quality\n❎: no ethernet\n🌐: ethernet working',
-        preset = naughty.config.presets.normal
-      })
-    end
-  end
-  )
-  return widg
-end
-
-function setInterval(timeout, cb)
-  local timer = gears.timer {
-    timeout = timeout,
-    call_now = true,
-    autostart = true,
-    callback = cb,
-  }
-  timer:start()
-  return timer
-end
+mytextclock = wibox.widget.textclock(span('%a %b %d [ %T ]'), 1)
 
 local lfs = require 'lfs'
 
-function net_widget(name, timeout, format_func)
-  local widg = wibox.widget {
-    align = 'center',
-    vallign = 'center',
-    widget = wibox.widget.textbox
-  }
-  local default_ft = function(link_name, rx_bytes, tx_bytes)
-    return string.format("🌐 %s 🔻%s 🔺%s", link_name, formatBytes(rx_bytes), formatBytes(tx_bytes))
-  end
 
-  local format_func = format_func or default_ft
-
-  local callback = function()
-    local tx_prev, rx_prev
-    local tx_prevf = io.open(string.format("%s/tx_data", os.getenv('XDG_CACHE_HOME') or os.getenv('HOME') .. '/.cache'))
-    local rx_prevf = io.open(string.format("%s/rx_data", os.getenv('XDG_CACHE_HOME') or os.getenv('HOME') .. '/.cache'))
-    if tx_prevf ~= nil then
-      tx_prev = tonumber(tx_prevf:read())
-      tx_prevf:close()
-    else tx_prev = 0 end
-
-    if rx_prevf ~= nil then
-      rx_prev = tonumber(rx_prevf:read())
-      rx_prevf:close()
-    else rx_prev = 0 end
-
-    local tx_nextf, rx_nextf, rx_next, tx_next
-    if name then
-      tx_nextf = io.open(string.format("/sys/class/net/%s/statistics/tx_bytes", name))
-      rx_nextf = io.open(string.format("/sys/class/net/%s/statistics/rx_bytes", name))
-      tx_next = tonumber(tx_nextf:read())
-      rx_next = tonumber(rx_nextf:read())
-      tx_nextf:close()
-      rx_nextf:close()
-    else
-      rx_prev = 0
-      tx_prev = 0
-      for dir in lfs.dir('/sys/class/net') do
-        local rxf = io.open(string.format('/sys/class/net/%s/statistics/rx_bytes'), dir)
-        local txf = io.open(string.format('/sys/class/net/%s/statistics/tx_bytes'), dir)
-        rx_next = rx_prev + tonumber(rxf:read())
-        tx_next = tx_prev + tonumber(txf:read())
-        rxf:close()
-        txf:close()
-      end
-    end
-
-
-    tx_prevf = io.open(string.format("%s/tx_data", os.getenv('XDG_CACHE_HOME') or os.getenv('HOME') .. '/.cache'), 'w')
-    rx_prevf = io.open(string.format("%s/rx_data", os.getenv('XDG_CACHE_HOME') or os.getenv('HOME') .. '/.cache'), 'w')
-
-    tx_prevf:write(tostring(tx_next))
-    rx_prevf:write(tostring(rx_next))
-
-
-    tx_prevf:close()
-    rx_prevf:close()
-
-    local tx_rate = tx_next - tx_prev
-    local rx_rate = rx_next - rx_prev
-
-
-    widg:set_text(format_func(name or 'All', rx_rate, tx_rate) or default_ft(name or 'All', rx_rate, tx_rate) )
-
-    return true
-  end
-
-  local timer = setInterval(1, callback)
-
-
-
-  widg:connect_signal('button::press',
-  function(_, __, ___, button)
-    if button == 1 then
-      naughty.notify({
-        title = "🌐 Network traffic module",
-        text = "🔻: Traffic received\n🔺: Traffic transmitted",
-        preset = naughty.config.presets.normal
-      })
-    end
-  end)
-
-  return widg
-end
-
-wifibar = net_widget("wlp2s0", 1)
-netbar  = wifi_widget()
+netbar  = widgets.network.wifi_signal(1)
+wifibar = widgets.network.network_status("wlp2s0", 1)
 
 -- Create a wibox for each screen and add it
 local taglist_buttons =
@@ -410,8 +283,13 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
-function separator()
-  return wibox.widget.textbox(' | ')
+function separator(direction)
+  if type(direction) ~= 'string' or not (direction ~= 'left' or direction ~= 'right') then
+    direction = 'left'
+  end
+  local value
+  if direction == 'left' then value = '' else value =  '' end
+  return wibox.widget.textbox(string.format(" %s ", value))
 end
 awful.screen.connect_for_each_screen(
 function(s)
@@ -487,8 +365,9 @@ function(s)
       -- Left widgets
       layout = wibox.layout.fixed.horizontal,
       mylauncher,
+      separator('left'),
       s.mytaglist,
-      separator(),
+      separator('right'),
       s.mypromptbox,
     },
     s.mytasklist, -- Middle widget
@@ -503,6 +382,8 @@ function(s)
       wifibar,
       separator(),
       netbar,
+      separator(),
+      widgets.battery.widget(),
       separator(),
       mytextclock,
       separator(),

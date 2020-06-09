@@ -1,5 +1,6 @@
 local config_colors = {}
 
+
 config_colors.padleft = function (str, t, len)
   if type (str) ~= 'string' then return '' end
   if type (t) ~= 'string' then t = '0' end
@@ -57,6 +58,20 @@ config_colors.rgbs_to_table = function (rgbs)
     result[#result+1] = config_colors.parse_hex(string.sub(rgbss, i, i + 1))
   end
   return result
+end
+
+local function lerp(a, b, l)
+  return  l * a + (1 -l) * b
+end
+
+config_colors.interpolate = function(cola, colb, l)
+  local color1 = config_colors.rgbs_to_table(cola)
+  local color2 = config_colors.rgbs_to_table(colb)
+  local color3 = '#'
+  for i = 1, 3 do
+    color3 = color3 .. string.format("%2x", lerp(color1[i], color2[i], l))
+  end
+  return color3
 end
 
 
