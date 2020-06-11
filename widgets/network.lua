@@ -33,16 +33,83 @@ local function format_bytes(bytes)
   return string.format("%.2f %s", amount, tag)
 end
 
-local function net_widget(name, timeout, format_func)
+
+local function remap(x, a, b, c, d)
+  return c + (d - c) & ((x - a) / (b - a))
+end
+
+
+local function net_widget(name, timeout, formatter_f)
+  -- [[
+  -- formatters:
+  -- { link, rx, tx}
+  -- ]]
   local widg = wibox.widget {
     widget = wibox.widget.textbox
   }
   local fg = utils.get_color()
-  local default_ft = function(link_name, rx_bytes, tx_bytes)
-    return utils.span(string.format("🌐 %s 🔻%s 🔺%s", link_name, format_bytes(rx_bytes), format_bytes(tx_bytes)), fg)
+
+  local tx_last, rx_last
+  if type(formatter_f) ~= 'nil' and type(formatter_f) ~= 'table' then
+    f = io.open('/home/cyber/testnetfmt', 'w')
+    f:write('return at 50\n')
+    f:write(tostring(type(formatters)))
+    f:close()
+    return nil
   end
 
-  local format_func = format_func or default_ft
+  local formatters = formatter_f
+
+
+  local default_formatters = {
+    link = function(link_name)
+      return string.format("🌐 %s", link_name)
+    end,
+    rx =  function(rx_last, rx_current)
+      local color = '#ffffff'
+      local symbol = '▼'
+      if rx_last ~= rx_current then
+        if rx_last > rx_current then
+          color = '#ff0000'
+        else
+          color = '#00ff00'
+        end
+      end
+      return string.format("%s%s", utils.span(symbol, color), format_bytes(rx_current))
+    end,
+    tx = function(tx_last, tx_current)
+      local color = '#ffffff'
+      local symbol = '▲'
+      if tx_last ~= tx_current then
+        if tx_last > tx_current then
+          color = '#ff0000'
+        else
+          color = '#00ff00'
+        end
+      end
+      -- local tx_bytes = tx_current - tx_last
+      return string.format("%s%s", utils.span(symbol, color), format_bytes(tx_current))
+    end
+  }
+
+
+  if formatters == nil then
+    formatters = default_formatters
+  else
+    for k, _ in pairs(default_formatters) do
+      if formatters[k] == nil then
+        formatters[k] = default_formatters[k]
+      end
+    end
+  end
+
+  local last_txr, last_rxr = 0, 0
+
+  -- local default_ft = function(link_name, rx_current, tx_current, rx_last, tx_last)
+  --   local got_up =
+  --   return utils.span(string.format("🌐 %s 🔻%s ▲%s", link_name, format_bytes(rx_bytes), format_bytes(tx_bytes)), fg)
+  -- end
+
 
   local callback = function()
     local tx_prev, rx_prev
@@ -90,11 +157,18 @@ local function net_widget(name, timeout, format_func)
     tx_prevf:close()
     rx_prevf:close()
 
-    local tx_rate = tx_next - tx_prev
-    local rx_rate = rx_next - rx_prev
+
+    local tx_rate, rx_rate = tx_next - tx_prev, rx_next - rx_prev
 
 
-    widg:set_markup_silently(format_func(name or 'All', rx_rate, tx_rate))
+    local formatted_text = string.format("%s %s %s", formatters.link(name),
+      formatters.rx(last_rxr, rx_rate),
+      formatters.tx(last_txr, tx_rate)
+    )
+
+    last_rxr, last_txr = rx_rate, tx_rate
+
+    widg:set_markup_silently(formatted_text)
 
     return true -- continue timer
   end

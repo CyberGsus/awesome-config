@@ -46,7 +46,7 @@ end
 
 local match_pairs = {
   { "[Dd]ischarging", '🔋'},
-  { '[Nn]ot chargint', '🛑' },
+  { '[Nn]ot charging', '🛑' },
   { '[Cc]harging', '🔌' },
   { '[Ff]ull' , '⚡' },
   { '[Uu]nknown', '♻️ ' }
@@ -66,9 +66,9 @@ local exports = {
 
     local timer = utils.set_interval(1, function()
       local info = battery_info()
-      local icon = '?'
+      local icon = ''
       for _, v in pairs(match_pairs) do
-        if info.status:match(v[1]) then icon = v[2] end
+        if info.status:match(string.format("%s", v[1])) then icon = v[2] break end
       end
       -- log = io.open('/home/cyber/testbat', 'w')
       local fg = utils.tbl2hex(utils.hsv2rgb((info.current or 0) / 360, 1, 1))
