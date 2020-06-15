@@ -17,10 +17,8 @@ config_colors.parse_hex = function (str)
     if char >= 48 and char <= 57 then
       num = char - 48
     end
-    --- char >= 'a' and char <= 'f'
-    if char >= 97 and char <= 102 then
-      num = char - 87
-    end
+    -- if char >= 'a' and char <= 'f'
+    if char >= 97 and char <= 102 then num = char - 87 end
 
 
     local pow = 16 ^ (#str - i)

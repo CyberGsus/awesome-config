@@ -194,7 +194,7 @@ theme.layout_cornersw = themes_path.."default/layouts/cornersww.png"
 theme.layout_cornerse = themes_path.."default/layouts/cornersew.png"
 
 -- Generate Awesome icon:
-theme.awesome_icon =  icons.aw_icon(theme.menu_height, theme.fg_focus, theme.bg_focus, 'cyber', themes_path)
+theme.awesome_icon =  icons.aw_icon(theme.menu_height * 10, theme.fg_focus, theme.bg_focus, 'cyber', themes_path)
 --[[theme_assets.awesome_icon(
 theme.menu_height, theme.bg_focus, theme.fg_focus
 ) --]]

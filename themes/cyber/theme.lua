@@ -13,8 +13,8 @@ local color_utils   = require 'color_utils'
 local colors        = require 'colors'
 local icons         = require 'icons'
 
-local app_icons_path    = '/home/cyber/.local/share/icons/candy-icons/'
-local theme_icons_path  = '/home/cyber/.themes/Sweet-Dark/assets/'
+local app_icons_path    = os.getenv("HOME") .. '/.local/share/icons/candy-icons/'
+local theme_icons_path  = os.getenv("HOME") .. '/.themes/Sweet-Dark/assets/'
 
 local theme = {}
 
@@ -52,10 +52,10 @@ theme.border_marked   = colors.secondary[1]
 -- Generate taglist squares
 local taglist_square_size = dpi(4)
 theme.taglist_squares_sel = theme_assets.taglist_squares_sel(
-  taglist_square_size, theme.fg_focus
+taglist_square_size, theme.fg_focus
 )
 theme.taglist_square_unsel = theme_assets.taglist_squares_unsel(
-  taglist_square_size, theme.fg_normal
+taglist_square_size, theme.fg_normal
 )
 
 
@@ -63,8 +63,8 @@ theme.taglist_square_unsel = theme_assets.taglist_squares_unsel(
 theme.notification_font = 'Hack'
 theme.notification_bg   = colors.dark[1]
 theme.notification_fg   = color_utils.apply_alpha(
-                              colors.light[1], colors.dark[1], 0.89
-                          )
+colors.light[1], colors.dark[1], 0.89
+)
 
 theme.notification_border_color   =   colors.secondary[1]
 theme.notitication_opacity        =   0.7
@@ -81,10 +81,10 @@ theme.titlebar_close_button_focus     = icons.asset('png', 'close', 'focus')
 theme.titlebar_minimize_button_normal = icons.asset('png', 'minimize')
 theme.titlebar_minimize_button_focus  = icons.asset('png', 'minimize', 'focus')
 
--- theme.titlebar_ontop_button_normal    
+-- theme.titlebar_ontop_button_normal
 
 
 -- Icons
-theme.icon_theme    = '/home/cyber/.local/share/wallpapers/links/wallpaper.jpg'
+theme.icon_theme    = os.getenv("HOME") .. '/.local/share/wallpapers/links/wallpaper.jpg'
 --
-return theme--
+return theme

@@ -51,10 +51,6 @@ local function net_widget(name, timeout, formatter_f)
 
   local tx_last, rx_last
   if type(formatter_f) ~= 'nil' and type(formatter_f) ~= 'table' then
-    f = io.open('/home/cyber/testnetfmt', 'w')
-    f:write('return at 50\n')
-    f:write(tostring(type(formatters)))
-    f:close()
     return nil
   end
 

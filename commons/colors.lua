@@ -2,19 +2,11 @@ local json  = require('commons/rxi/json')
 
 
 local readall = function (filename)
-  io.write(string.format('Filename : %s\n', filename))
-  local file = io.open(filename, 'r')
-  io.input(file)
   local str = ''
-  local lastread = nil
-  while true do
-    lastread = io.read()
-    if lastread == nil then
-      break
-    end
-    str = str .. lastread
-  end
-  io.close(file)
+  local f = io.open(filename)
+  if f == nil then return '' end
+  str = f:read("*all")
+  f:close()
   return str
 end
 
@@ -25,7 +17,7 @@ color_functions.load_json = function(filename)
 end
 
 color_functions.load_colors = function (theme)
-  return color_functions.load_json('/home/cyber/.config/awesome/themes/' ..theme.. '/colors.json')
+  return color_functions.load_json(os.getenv("HOME") .. '/.config/awesome/themes/' ..theme.. '/colors.json')
 end
 
 return color_functions
