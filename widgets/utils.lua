@@ -3,9 +3,14 @@ local colors = require ('commons/colors').load_colors('cyber')
 local alpha = require ('commons/color_utils').apply_direct_alpha
 local gears = require 'gears'
 
+
+local function remap(x, a, b, c, d)
+  return c + (d - c) * ((x - a) / (b - a))
+end
+
 local function hsv2rgb(h, s, v)
   local r, g, b
-  local i = math.floor( h * 6)
+  local i = math.floor(h * 6)
   local f = h * 6 - i
   local p = v * (1 - s)
   local q = v * (1 - f * s)
@@ -31,59 +36,65 @@ local tbl2hex = function(tbl)
   return string.format("#%02x%02x%02x", tbl[1], tbl[2], tbl[3])
 end
 
+local hsv2hex = function(h, s, v)
+  return tbl2hex(hsv2rgb(h, s, v))
+end
+
 
 local color_toggle = true
 local function get_color(no_toggle)
-  -- local color
-  -- if color_toggle then
-  --   color = colors.primary[1]
-  -- else
-  --   color = colors.secondary[1]
-  -- end
-  -- if no_toggle ~= true then
-  --   color_toggle = not color_toggle
-  -- end
-  -- return alpha(color, 0.90)
-  return alpha(colors.light[1], 0.5)
+-- local color
+-- if color_toggle then
+--   color = colors.primary[1]
+-- else
+--   color = colors.secondary[1]
+-- end
+-- if no_toggle ~= true then
+--   color_toggle = not color_toggle
+-- end
+-- return alpha(color, 0.90)
+return alpha(colors.light[1], 0.5)
 end
 
 local function span(text, color)
-  if color == nil then
-    color = get_color()
-  end
-  return string.format("<span foreground='%s' >%s</span>", color,
-  text)
+if color == nil then
+  color = get_color()
+end
+return string.format("<span foreground='%s' >%s</span>", color,
+text)
 end
 
 local function set_interval(timeout, cb)
-  local timer = gears.timer {
-    timeout = timeout,
-    call_now = true,
-    autostart = true,
-    callback = cb,
-  }
-  timer:start()
-  return timer
+local timer = gears.timer {
+  timeout = timeout,
+  call_now = true,
+  autostart = true,
+  callback = cb,
+}
+timer:start()
+return timer
 end
 
 
 local function watch(sc,timeout, widget, cb)
-  if cb == nil then cb = function(widg, out) end end
-  return set_interval(timeout, function()
-    local fd = io.popen(sc)
-    if fd == nil then return false end -- failed, don't repeat
-    local out = fd:read("*all")
-    fd:close()
-    cb(widget, out)
-    return true
-  end)
+if cb == nil then cb = function(widg, out) end end
+return set_interval(timeout, function()
+  local fd = io.popen(sc)
+  if fd == nil then return false end -- failed, don't repeat
+  local out = fd:read("*all")
+  fd:close()
+  cb(widget, out)
+  return true
+end)
 end
 
 return {
-  span = span,
-  get_color = get_color,
-  set_interval = set_interval,
-  watch = watch,
-  hsv2rgb = hsv2rgb,
-  tbl2hex = tbl2hex,
+span = span,
+get_color = get_color,
+set_interval = set_interval,
+watch = watch,
+hsv2rgb = hsv2rgb,
+tbl2hex = tbl2hex,
+map = remap,
+  hsv2hex = hsv2hex,
 }

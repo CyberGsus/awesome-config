@@ -35,6 +35,8 @@ if awesome.startup_errors then
   )
 end
 
+
+
 -- Handle runtime errors after startup
 do
   local in_error = false
@@ -58,6 +60,7 @@ do
   end
   )
 end
+
 
 
 -- {{{ Variable definitions
@@ -132,6 +135,7 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 
 -- Keyboard map indicator and switcher
 mykeyboardlayout = widgets.keyboard.build()
+myvolumewidget = widgets.volume.build()
 
 
 
@@ -152,23 +156,11 @@ function indexOf(tbl, t)
       return i
     end
   end
-  return -1
+  return -1 -- not found
 end
 
 local colors = require ('commons/colors').load_colors('cyber')
 
-
-local color_n = true
-function get_color()
-  local color
-  if color_n then
-    color = colors.primary[1]
-  else
-    color = colors.secondary[1]
-  end
-  color_n = not color_n
-  return color
-end
 
 -- widgets/utils.lua
 local span = require ('widgets/utils').span
@@ -267,7 +259,16 @@ end
 )
 )
 
+
 tagnames = {"🏠 HOME ", "⚙  DEV ", "📃 CLASS ", "🔘 MEDIA ", "💲 TERM "}
+
+local function move_to_new_tag()
+  local c = client.focus
+  if not c then return end
+  local t = awful.tag.add(c.classs, { screen = c.screen })
+end
+
+
 local function set_wallpaper(s)
   -- Wallpaper
   if beautiful.wallpaper then
@@ -377,6 +378,8 @@ function(s)
       separator(),
       mykeyboardlayout,
       separator(),
+      myvolumewidget,
+      separator(),
       systray,
       separator(),
       wifibar,
@@ -390,8 +393,33 @@ function(s)
       s.mylayoutbox
     }
   }
+
+
+
 end
 )
+
+
+for s = 1, screen.count() do
+  screen[s]:connect_signal("arrange", function ()
+    local clients = awful.client.visible(s)
+    local layout  = awful.layout.getname(awful.layout.get(s))
+
+    -- No borders with only one visible client or in maximized layout
+    if #clients > 1 then
+      for _, c in pairs(clients) do -- Floaters always have borders
+        if layout ~= "max" then
+          c.border_width = beautiful.border_width
+          c.border_color = beautiful.border_focus
+        end
+      end
+    else
+      for _, c in pairs(clients) do
+        c.border_with = 0
+      end
+    end
+  end)
+end
 
 -- }}}
 
@@ -899,6 +927,8 @@ awful.rules.rules = {
   --   properties = { screen = 1, tag = "2" } },
 }
 -- }}}
+--
+--
 
 -- {{{ Signals
 -- Signal function to execute when a new client appears.
@@ -941,34 +971,61 @@ function(c)
   )
   )
 
-  awful.titlebar(c):setup {
-    {
-      -- Left
-      awful.titlebar.widget.iconwidget(c),
-      buttons = buttons,
-      layout = wibox.layout.fixed.horizontal
-    },
-    {
-      -- Middle
-      {
-        -- Title
-        align = "center",
-        widget = awful.titlebar.widget.titlewidget(c)
-      },
-      buttons = buttons,
-      layout = wibox.layout.flex.horizontal
-    },
-    {
-      -- Right
-      awful.titlebar.widget.floatingbutton(c),
-      awful.titlebar.widget.maximizedbutton(c),
-      awful.titlebar.widget.stickybutton(c),
-      awful.titlebar.widget.ontopbutton(c),
-      awful.titlebar.widget.closebutton(c),
-      layout = wibox.layout.fixed.horizontal()
-    },
-    layout = wibox.layout.align.horizontal
+
+  -- <https://stackoverflow.com/questions/30324250/how-to-hide-borders-dynamically-from-windows-when-not-tiled-awesome-wm>
+  awful.titlebar(c, {
+    position = 'top',
+    size      = beautiful.title_width,
+    bg_normal = beautiful.border_normal,
+    bg_focus  = beautiful.border_focus,
+  }):setup
+  {
+    --   -- Left
+    awful.titlebar.widget.iconwidget(c),
+    --   buttons = buttons,
+    --   layout = wibox.layout.fixed.horizontal
+    -- },
+    -- {
+    --   -- Middle
+    --   {
+    --     -- Title
+    --     align = "center",
+    --     widget = awful.titlebar.widget.titlewidget(c)
+    --   },
+    --   buttons = buttons,
+    --   layout = wibox.layout.flex.horizontal
+    -- },
+    -- {
+    --   -- Right
+    --   awful.titlebar.widget.floatingbutton(c),
+    --   awful.titlebar.widget.maximizedbutton(c),
+    --   awful.titlebar.widget.stickybutton(c),
+    --   awful.titlebar.widget.ontopbutton(c),
+    --   awful.titlebar.widget.closebutton(c),
+    --   layout = wibox.layout.fixed.horizontal()
+    -- },
+    -- layout = wibox.layout.align.horizontal
   }
+
+
+  -- awful.titlebar(c, {
+  --   position = 'left',
+  --   bg_normal = beautiful.border_normal,
+  --   bg_focus  = beautiful.border_focus,
+  --   size = beautiful.bar_width,
+  -- }):setup {}
+  -- awful.titlebar(c, {
+  --   position = 'right',
+  --   bg_normal = beautiful.border_normal,
+  --   bg_focus  = beautiful.border_focus,
+  --   size = beautiful.bar_width,
+  -- }):setup {}
+  -- awful.titlebar(c, {
+  --   position = 'down',
+  --   bg_normal = beautiful.border_normal,
+  --   bg_focus  = beautiful.border_focus,
+  --   size = beautiful.bar_width,
+  -- }):setup {}
 end
 )
 
@@ -983,9 +1040,7 @@ end
 client.connect_signal(
 "focus",
 function(c)
-  if type(c) == "table" then
-    c.border_color = beautiful.border_focus
-  end
+  c.border_color = beautiful.border_focus
 end
 )
 client.connect_signal(
