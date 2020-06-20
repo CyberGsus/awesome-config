@@ -15,6 +15,7 @@ local naughty = require("naughty")
 local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup")
 local themes = require 'themes'
+local icons = require 'icons'
 
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
@@ -269,7 +270,8 @@ end
 )
 )
 
-tagnames = {"🏠 HOME ", "⚙  DEV ", "📃 CLASS ", "🔘 MEDIA ", "💲 TERM "}
+
+tagnames = {"🏠 HOME " , "🔘 MEDIA ", "💲 TERM "}
 local function set_wallpaper(s)
   -- Wallpaper
   if beautiful.wallpaper then
@@ -299,7 +301,8 @@ function(s)
   set_wallpaper(s)
 
   -- Each screen has its own tag table.
-  awful.tag(tagnames, s, awful.layout.layouts[1])
+  icons.statics(tagnames)
+  -- awful.tag(tagnames, s, awful.layout.layouts[1])
 
   -- Create a promptbox for each screen
   s.mypromptbox = awful.widget.prompt()
@@ -713,6 +716,7 @@ end,
 {description = "(un)maximize horizontally", group = "client"}
 ),
 awful.key({modkey, "Shift"}, "l", switchKeyboard, {description = "Shift keyboard layout", group = "awesome"})
+
 )
 
 local function capitalize(str)
@@ -741,6 +745,29 @@ globalkeys,
 -- Launch discord
 launch({modkey}, "d", "discord"),
 launch({modkey}, "b", "qutebrowser", "browser")
+)
+
+-- Bind new tag stuff
+globalkeys = gears.table.join(
+  globalkeys,
+  -- Tests:
+  --  icon -- no  matches
+  --  equal name - passed
+  --  just add the fucking tag -- passed
+  awful.key(
+    { modkey,       }, 'a', icons.add,
+    { description = 'Add new tag', group = 'tag'}),
+
+  -- Tests:
+  --  just delete the fucking tag --passed
+  awful.key(
+    { modkey, 'Shift'}, 'd', icons.delete_current,
+    { description = 'Delete current tag', group = 'tag'}),
+
+  awful.key(
+    { modkey, 'Shift' }, 'r', icons.rename,
+    { description = 'Rename current tag', group = 'tag'})
+
 )
 
 -- Bind all key numbers to tags.
