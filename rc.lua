@@ -14,6 +14,7 @@ local beautiful = require("beautiful")
 local naughty = require("naughty")
 local menubar = require("menubar")
 local hotkeys_popup = require("awful.hotkeys_popup")
+local themes = require 'themes'
 
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
@@ -62,7 +63,7 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
-beautiful.init(os.getenv("HOME") .. "/.config/awesome/themes/default/theme.lua")
+beautiful.init(themes.init_script())
 
 -- This is used later as the default terminal and editor to run.
 terminal = "alacritty"
@@ -155,7 +156,7 @@ function indexOf(tbl, t)
   return -1
 end
 
-local colors = require ('commons/colors').load_colors('cyber')
+local colors = themes.get_colors()
 
 
 local color_n = true
@@ -173,7 +174,7 @@ end
 -- widgets/utils.lua
 local span = require ('widgets/utils').span
 
-local colors = require ('commons/colors').load_colors('cyber')
+-- local colors = require ('commons/colors').load_colors('cyber')
 
 
 -- {{{ Wibar
@@ -185,6 +186,7 @@ local lfs = require 'lfs'
 
 netbar  = widgets.network.wifi_signal(1)
 wifibar = widgets.network.network_status("wlp2s0", 1)
+
 
 -- Create a wibox for each screen and add it
 local taglist_buttons =
