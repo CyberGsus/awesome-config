@@ -1,5 +1,5 @@
 -- put primary and secondary in color thmee
-local colors = require ('commons/colors').load_colors('cyber')
+local colors = require ('themes').get_colors()
 local alpha = require ('commons/color_utils').apply_direct_alpha
 local gears = require 'gears'
 

@@ -380,6 +380,8 @@ function(s)
       -- Right widgets
       layout = wibox.layout.fixed.horizontal,
       separator(),
+      -- widgets.hackthebox.build(),
+      -- separator(),
       mykeyboardlayout,
       separator(),
       systray,

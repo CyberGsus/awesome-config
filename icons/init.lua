@@ -177,6 +177,7 @@ return {
   rename = rename,
   delete_current = delete_current,
   statics  = pre_tags,
+  icon_dir = icon_dir, -- now my local one should be safe
   -- backend is a table with features that will not act from the frontend
   -- but should be accessible
 }
