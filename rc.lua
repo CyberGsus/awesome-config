@@ -17,6 +17,7 @@ local hotkeys_popup = require("awful.hotkeys_popup")
 local themes = require 'themes'
 local icons = require 'icons'
 
+
 -- Enable hotkeys help widget for VIM and other apps
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
@@ -186,7 +187,7 @@ local lfs = require 'lfs'
 
 
 netbar  = widgets.network.wifi_signal(1)
-wifibar = widgets.network.network_status("wlp2s0", 1)
+wifibar = widgets.network.network_status({ "wlp2s0", "tun*"}, 1)
 
 
 -- Create a wibox for each screen and add it
@@ -379,9 +380,9 @@ function(s)
     {
       -- Right widgets
       layout = wibox.layout.fixed.horizontal,
-      separator(),
-      -- widgets.hackthebox.build(),
       -- separator(),
+      -- require ('widgets/htb'),
+      separator(),
       mykeyboardlayout,
       separator(),
       systray,
@@ -572,11 +573,14 @@ end,
 ),
 awful.key(
 {modkey},
-"space",
+"tab",
 function()
   awful.layout.inc(1)
 end,
 {description = "select next", group = "layout"}
+),
+awful.key(
+ { modkey, }, 'space', widgets.keyboard.next_layout, { description = 'select next keyboard layout', group = 'keyboard'}
 ),
 awful.key(
 {modkey, "Shift"},
@@ -749,6 +753,17 @@ launch({modkey}, "d", "discord"),
 launch({modkey}, "b", "qutebrowser", "browser")
 )
 
+local search_tag = function(name)
+  local tags = awful.screen.focused().tags
+  for _, tag in pairs(tags) do
+    if tag.name:lower():match(name:lower()) then
+      return tag
+    end
+  end
+  return nil
+end
+
+
 -- Bind new tag stuff
 globalkeys = gears.table.join(
   globalkeys,
@@ -768,7 +783,25 @@ globalkeys = gears.table.join(
 
   awful.key(
     { modkey, 'Shift' }, 'r', icons.rename,
-    { description = 'Rename current tag', group = 'tag'})
+    { description = 'Rename current tag', group = 'tag'}),
+
+  awful.key(
+    { modkey, 'Shift', }, 'g', function()
+      awful.prompt.run {
+        prompt = 'Move to tag: ',
+        textbox = awful.screen.focused().mypromptbox.widget,
+
+        exe_callback = function(name)
+          local c = client.focus
+          if not c then return end
+          local t = search_tag(name)
+          if not t then return end
+          c:tags({t})
+          t:view_only()
+        end
+      }
+    end,
+    { description = 'Move client to existing tag'})
 
 )
 

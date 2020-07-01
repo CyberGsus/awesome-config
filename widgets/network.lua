@@ -4,7 +4,20 @@ local naughty = require 'naughty'
 local gears = require 'gears'
 local wibox = require 'wibox'
 local utils = require 'widgets/utils'
+local colors = require 'themes'.get_colors()
 
+local function ip_address(link_name, mode)
+  if mode ~= 4 or mode ~= 6 then mode = 4 end
+  local f = io.popen('ip -br -' .. mode .. ' a s | egrep ' .. '\'' .. link_name .. '\''):lines()()
+  local ip
+  if f == nil or f:match('Error') or #f == '' then ip = 'N/A' end
+  if mode == 4 then
+    ip = f:match("%d+%.%d+%.%d+%.%d+%/%d+") -- match ipv4
+  else
+    ip = f:match("%x*::%x*:?%x*:?%x*:?%x*/%d+") -- match ipv6
+  end
+  return ip
+end
 
 -- widgets/utils.lua
 local function format_bytes(bytes)
@@ -30,7 +43,13 @@ local function format_bytes(bytes)
     tag = 'PiB'
     amount = amount / 1024
   end
-  return string.format("%.2f %s", amount, tag)
+  local amountst
+  if amount == 0 then
+    amountst = '0'
+  else
+  amountst = string.format('%.4f', amount)
+end
+  return string.format("%s %s", amountst, tag)
 end
 
 
@@ -39,11 +58,31 @@ local function remap(x, a, b, c, d)
 end
 
 
-local function net_widget(name, timeout, formatter_f)
+-- '*' means get all interfaces
+local function net_widget(original_names, timeout, formatter_f)
   -- [[
   -- formatters:
   -- { link, rx, tx}
   -- ]]
+  assert(type(original_names) == 'string' or type(original_names) == 'table')
+  assert(type(timeout) == 'number')
+  local names
+  local original_names = original_names
+  if type(original_names) == 'string' then
+    original_names = { original_names }
+  end
+  local function update_names()
+    -- update what is present and what is not
+    local real_names = {}
+    for _, name in pairs(original_names) do
+      for line in io.popen('ip -br a s | egrep ' .. '\'' .. name .. '\''):lines() do
+        -- fetch the iface name and catch bytes
+        real_names[#real_names + 1] = line:match("[%w%d]+")
+      end
+    end
+    names = real_names
+  end
+  update_names()
   local widg = wibox.widget {
     widget = wibox.widget.textbox
   }
@@ -59,13 +98,13 @@ local function net_widget(name, timeout, formatter_f)
 
   local default_formatters = {
     link = function(link_name)
-      return string.format("🌐 %s", link_name)
+      return string.format("🌐 %s %s", utils.span(link_name, colors.secondary[1]), utils.span(ip_address(link_name), colors.primary[1]))
     end,
-    rx =  function(rx_last, rx_current)
+    rx =  function(rxr_last, rxr_current, rx_current)
       local color = '#ffffff'
       local symbol = '▼'
-      if rx_last ~= rx_current then
-        if rx_last > rx_current then
+      if rxr_last ~= rxr_current then
+        if rxr_last > rxr_current then
           color = '#ff0000'
         else
           color = '#00ff00'
@@ -73,11 +112,11 @@ local function net_widget(name, timeout, formatter_f)
       end
       return string.format("%s%s", utils.span(symbol, color), format_bytes(rx_current))
     end,
-    tx = function(tx_last, tx_current)
+    tx = function(txr_last, txr_current, tx_current)
       local color = '#ffffff'
       local symbol = '▲'
-      if tx_last ~= tx_current then
-        if tx_last > tx_current then
+      if txr_last ~= txr_current then
+        if txr_last > txr_current then
           color = '#ff0000'
         else
           color = '#00ff00'
@@ -106,6 +145,7 @@ local function net_widget(name, timeout, formatter_f)
   --   return utils.span(string.format("🌐 %s 🔻%s ▲%s", link_name, format_bytes(rx_bytes), format_bytes(tx_bytes)), fg)
   -- end
 
+  local current = names[1]
 
   local callback = function()
     local tx_prev, rx_prev
@@ -122,26 +162,12 @@ local function net_widget(name, timeout, formatter_f)
     else rx_prev = 0 end
 
     local tx_nextf, rx_nextf, rx_next, tx_next
-    if name then
-      tx_nextf = io.open(string.format("/sys/class/net/%s/statistics/tx_bytes", name))
-      rx_nextf = io.open(string.format("/sys/class/net/%s/statistics/rx_bytes", name))
+      tx_nextf = io.open(string.format("/sys/class/net/%s/statistics/tx_bytes", current))
+      rx_nextf = io.open(string.format("/sys/class/net/%s/statistics/rx_bytes", current))
       tx_next = tonumber(tx_nextf:read())
       rx_next = tonumber(rx_nextf:read())
       tx_nextf:close()
       rx_nextf:close()
-    else
-      rx_prev = 0
-      tx_prev = 0
-      for dir in lfs.dir('/sys/class/net') do
-        local rxf = io.open(string.format('/sys/class/net/%s/statistics/rx_bytes'), dir)
-        local txf = io.open(string.format('/sys/class/net/%s/statistics/tx_bytes'), dir)
-        rx_next = rx_prev + tonumber(rxf:read())
-        tx_next = tx_prev + tonumber(txf:read())
-        rxf:close()
-        txf:close()
-      end
-    end
-
 
     tx_prevf = io.open(string.format("%s/tx_data", os.getenv('XDG_CACHE_HOME') or os.getenv('HOME') .. '/.cache'), 'w')
     rx_prevf = io.open(string.format("%s/rx_data", os.getenv('XDG_CACHE_HOME') or os.getenv('HOME') .. '/.cache'), 'w')
@@ -157,28 +183,60 @@ local function net_widget(name, timeout, formatter_f)
     local tx_rate, rx_rate = tx_next - tx_prev, rx_next - rx_prev
 
 
-    local formatted_text = string.format("%s %s %s", formatters.link(name),
-      formatters.rx(last_rxr, rx_rate),
-      formatters.tx(last_txr, tx_rate)
+    local formatted_text = string.format("%s %s %s", formatters.link(current),
+      formatters.rx(last_rxr, rx_rate, rx_next),
+      formatters.tx(last_txr, tx_rate, tx_next)
     )
 
     last_rxr, last_txr = rx_rate, tx_rate
 
     widg:set_markup_silently(formatted_text)
+    update_names()
 
     return true -- continue timer
   end
 
   local timer = utils.set_interval(1, callback)
+  local current_i = 1
+
+  local function next_iface()
+    -- local f2 = io.open('/home/cyber/testrc', 'w')
+    -- for _, v  in pairs(names) do
+    --   f2:write(v .. '\n')
+    -- end
+    -- f2:close()
+    local next_i = current_i % #names + 1
+    local f = io.popen('ip -br a s ' .. names[next_i]):lines()()
+    if not f:match('Error') then
+      current_i = next_i
+      current = names[current_i]
+      -- flush last bytes
+      tx_prevf = io.open(string.format("%s/tx_data", os.getenv('XDG_CACHE_HOME') or os.getenv('HOME') .. '/.cache'), 'w')
+      rx_prevf = io.open(string.format("%s/rx_data", os.getenv('XDG_CACHE_HOME') or os.getenv('HOME') .. '/.cache'), 'w')
+      tx_prevf:write('0')
+      rx_prevf:write('0')
+      tx_prevf:close()
+      rx_prevf:close()
+    end
+  end
 
   widg:connect_signal('button::press',
   function(_, __, ___, button)
-    if button == 1 then
+    if button == 3 then
+      local list = ''
+      update_names()
+      for i, name in pairs(names) do
+        list = list .. name
+        if i < #names then list = list .. '\n' end
+      end
       naughty.notify({
         title = "🌐 Network traffic module",
-        text = "🔻: Traffic received\n🔺: Traffic transmitted",
+        text = "🔻: Traffic received\n🔺: Traffic transmitted\nClick for next interface in list" ..
+                '\nAvailable devices: \n' .. list,
         preset = naughty.config.presets.normal
       })
+    elseif button == 1 then
+      next_iface()
     end
   end)
 
