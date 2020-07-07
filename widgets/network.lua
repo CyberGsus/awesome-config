@@ -110,7 +110,7 @@ local function net_widget(original_names, timeout, formatter_f)
           color = '#00ff00'
         end
       end
-      return string.format("%s%s", utils.span(symbol, color), format_bytes(rx_current))
+      return string.format("%s%s", utils.span(symbol, color), format_bytes(rxr_current))
     end,
     tx = function(txr_last, txr_current, tx_current)
       local color = '#ffffff'
@@ -123,7 +123,7 @@ local function net_widget(original_names, timeout, formatter_f)
         end
       end
       -- local tx_bytes = tx_current - tx_last
-      return string.format("%s%s", utils.span(symbol, color), format_bytes(tx_current))
+      return string.format("%s%s", utils.span(symbol, color), format_bytes(txr_current))
     end
   }
 
