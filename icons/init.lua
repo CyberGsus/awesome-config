@@ -54,10 +54,13 @@ local function get_icon(tag_name)
     local t = config.matches[name]
     if t == nil then goto continue end
     if type(t[icon]) == 'string' then
+      -- absolute path
       if t.icon:sub(1, 1) == '/' then
         return t.icon
+      -- HOME path
       elseif t.icon:sub(1, 1) == '~' then
         return os.getenv('HOME') .. t.icon:sub(2, #t.icon)
+      -- relative to icon_dir
       else
         return icon_dir .. '/' .. file
       end

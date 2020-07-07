@@ -23,6 +23,7 @@ local tags = require 'tags'
 tags.matches('dev', { append = "⚙️" })
 tags.matches('py', { prepend = "🐍" })
 tags.matches('web', { prepend = "🌐" })
+icons.matches('vue', { icon = 'vue.svg' })
 
 --- }}
 
