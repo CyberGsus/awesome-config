@@ -45,28 +45,49 @@ local function split(inp, sep)
   return pairs(t)
 end
 
+
 local function get_icon(tag_name)
   -- checks if I have an icon which matches the tag name, case insensitive
   if type(tag_name) ~= 'string' or #tag_name == 0 then return end
   if config.case_insensitive then tag_name = tag_name:lower() end
   -- now check if it has a match in config overrides
+  local ret_val
   for _, name in split(tag_name) do
-    local t = config.matches[name]
-    if t == nil then goto continue end
-    if type(t[icon]) == 'string' then
-      -- absolute path
-      if t.icon:sub(1, 1) == '/' then
-        return t.icon
-      -- HOME path
-      elseif t.icon:sub(1, 1) == '~' then
-        return os.getenv('HOME') .. t.icon:sub(2, #t.icon)
-      -- relative to icon_dir
-      else
-        return icon_dir .. '/' .. file
+    local count = 0
+    for _, t in utils.filter(config.matches, function(keys,tbl) 
+      if type(keys) == 'string' then
+        return name:find(keys) ~= nil
+      elseif type(keys) == 'table' then
+        for k, v in ipairs(keys) do
+          if name:find(k) ~= nil then return true end
+        end
+      else return false
       end
+    end) do
+      count = count + 1
+      if t == nil then goto continue end
+      if type(t.icon) == 'string' then
+        -- absolute path
+        if t.icon:sub(1, 1) == '/' then
+          ret_val = t.icon
+          break
+          -- HOME path
+        elseif t.icon:sub(1, 1) == '~' then
+          ret_val =  os.getenv('HOME') .. t.icon:sub(2, #t.icon)
+          break
+          -- relative to icon_dir
+        else
+          ret_val = icon_dir .. '/' .. t.icon
+          break
+        end
+      end
+      ::continue::
     end
-    ::continue::
   end
+
+
+  if ret_val then return ret_val end
+
   -- local pattern = string.format('^%s\\.(.+)$', tag_name)
   for file in io.popen('find "' .. icon_dir .. '" -type f | cut -d/ -f9'):lines() do
     if config.case_insensitive then file = file:lower() end
@@ -99,18 +120,20 @@ end
 
 return {
   get_icon = get_icon,
-  matches = function(name, new_tbl)
-    local last_tbl = {  }
-    if type(config.matches[name]) ~= 'table' then
-      config.matches[name] = {}
+  matches = function(names, new_tbl)
+    if type(names) == 'string' then
+      names = { names }
     end
-
-    for k, v in utils.namepairs(new_tbl) do
-      config.matches[name][k] = v
+    for _, name in ipairs(names) do
+      if type(config.matches[name]) ~= 'table' then
+        config.matches[name] = {}
+      end
+      for k, v in utils.namepairs(new_tbl) do
+        config.matches[name][k] = v
+      end
     end
-
-
   end,
+
   backend = {
     get_config = function()
       return config
