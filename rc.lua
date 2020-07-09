@@ -30,6 +30,8 @@ icons.matches({ 'cpp', 'c++' }, { icon = 'languages/cpp.svg' })
 tags.matches('dev', { append = "⚙" })
 tags.matches('web', { prepend = "🌐" })
 tags.matches('learn', { append = "📖" })
+tags.matches('class', { prepend = '😪' })
+-- TODO: make reload first save tags
 
 
 --- }}

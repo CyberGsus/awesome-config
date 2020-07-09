@@ -4,6 +4,7 @@ local icons = require 'icons'
 local themes = require 'themes'
 local layouts = require 'tags/layouts'
 local utils = require 'utils'
+local naughty = require 'naughty'
 
 
 
