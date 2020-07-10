@@ -1,10 +1,20 @@
 # 🏁 TODO
 
+## :gear: Management
+
+- [ ] Mege back to `master` as not process heavy
+
 ## 🔨 🐛 Bugfixes
 
 All clean 🌟 ✅
 
 ## ➕ Addons
+
+- [ ] Widgets
+
+  - [ ] Get volume widget going again
+  - [ ] Create update number widget (`checkupdates+aur`)
+  - [ ] Create informant widget ❔
 
 - [ ] Cleanup `rc.lua`
 
