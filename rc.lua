@@ -1,4 +1,3 @@
--- If LuaRocks is installed, make sure that packages installed through it are
 -- found (e.g. lgi). If LuaRocks is not installed, do nothing.
 pcall(require, "luarocks.loader")
 
@@ -17,6 +16,7 @@ local hotkeys_popup = require("awful.hotkeys_popup")
 local themes = require "themes"
 local icons = require "icons"
 local tags = require 'tags'
+local poweroff = require 'poweroff'
 
 -- -{{ tag matching rules
 
@@ -129,7 +129,8 @@ myawesomemenu = {
     {"restart", awesome.restart},
     {"quit", function()
         awesome.quit()
-      end}
+      end},
+    { "poweroff", function() os.execute('poweroff') end, poweroff.icon() }
     }
 
     mymainmenu =
@@ -772,7 +773,7 @@ myawesomemenu = {
             -- Launch discord
             launch({modkey}, "d", "/opt/Discord/Discord", "discord"),
             launch({modkey}, "b", "firefox", "browser"), -- NOTE: may change this to a custom function that finds browsers and prompts
-            launch({"Shift"}, "Print", "mate-screenshot -i", "screenshot dialog")
+            launch({"Shift"}, "Print", terminal .. "mate-screenshot -i", "screenshot dialog")
             )
 
 

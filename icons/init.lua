@@ -138,5 +138,6 @@ return {
     get_config = function()
       return config
     end,
+    get_icon_dir = get_icon_dir
   },
 }
