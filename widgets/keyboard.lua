@@ -42,4 +42,7 @@ kbdc.build = function()
   return widg
 end
 
+kbdc.next_layout = next_layout
+kbdc.last_layout = last_layout
+
 return kbdc

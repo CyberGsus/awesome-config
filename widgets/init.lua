@@ -4,6 +4,7 @@ local exports = {
   utils = require 'widgets/utils',
   battery = require 'widgets/battery',
   volume = require 'widgets/volume',
+  -- vpn = require 'widgets/vpn',
 }
 
 return exports
