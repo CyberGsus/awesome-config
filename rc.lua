@@ -31,6 +31,7 @@ tags.matches('dev', { append = "⚙" })
 tags.matches('web', { prepend = "🌐" })
 tags.matches('learn', { append = "📖" })
 tags.matches('class', { prepend = '😪' })
+icons.matches('ctf', { icon = 'ctf.png', upper = true })
 -- TODO: make reload first save tags
 
 
@@ -769,8 +770,9 @@ myawesomemenu = {
           gears.table.join(
             globalkeys,
             -- Launch discord
-            launch({modkey}, "d", "/opt/Discord/Discord"),
-            launch({modkey}, "b", "qutebrowser", "browser")
+            launch({modkey}, "d", "/opt/Discord/Discord", "discord"),
+            launch({modkey}, "b", "firefox", "browser"), -- NOTE: may change this to a custom function that finds browsers and prompts
+            launch({"Shift"}, "Print", "mate-screenshot -i", "screenshot dialog")
             )
 
 
@@ -813,6 +815,7 @@ myawesomemenu = {
 
 
             )
+
 
           -- Bind all key numbers to tags.
           -- Be careful: we use keycodes to make it work on any keyboard layout.

@@ -41,6 +41,15 @@ local function check_tag(name)
 
       name = name .. utils.check_string(append)
       name = utils.check_string(prepend) .. name
+
+      if v.uppercase == true then
+        name = name:upper()
+      elseif v.lowercase == true then
+        name = name:lower()
+      else
+        name = name:sub(1, 1):upper() .. name:sub(2):lower()
+      end
+
     end
   end
 
