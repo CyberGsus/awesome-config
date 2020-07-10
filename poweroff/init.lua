@@ -1,4 +1,4 @@
-local icons = require 'icons'
+local icons = require 'icons'.backend
 local colors = (require 'themes').get_colors()
 
 local svg = nil
@@ -8,8 +8,8 @@ local function build(name)
     name = 'poweroff.svg'
   end
 
-  local svgf = io.open(icons.get_icon_dir() .. 'poweroff.svgf', 'r')
-  local svg_mod = io.open(icons.get_icon_dir() .. 'poweroff-mod.svgf', 'w')
+  local svgf = io.open(icons.get_icon_dir() .. 'poweroff.svg', 'r')
+  local svg_mod = io.open(icons.get_icon_dir() .. 'poweroff-mod.svg', 'w')
   for line in svgf:lines() do
     local fstart, fend = line:find('"#(%x+)"')
     if fstart ~= nil and fend ~= nil then
