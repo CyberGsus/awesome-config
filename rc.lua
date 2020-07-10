@@ -23,7 +23,7 @@ local poweroff = require 'poweroff'
 icons.matches('c$', { icon = 'languages/c.svg' })
 icons.matches('py', { icon = 'languages/python.png' })
 icons.matches('settings', { icon = 'usb.png' })
-icons.matches('term', { icon = 'cmdline-fluent.png' })
+icons.matches('term', { icon = 'cmdline-fluent.png', upper = true })
 icons.matches('vms', { icon = '/usr/share/icons/hicolor/22x22/apps/vmware-player.png' })
 icons.matches('vue', { icon = 'vue.svg' })
 icons.matches({ 'cpp', 'c++' }, { icon = 'languages/cpp.svg' })
