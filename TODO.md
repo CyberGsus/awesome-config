@@ -2,7 +2,7 @@
 
 ## :gear: Management
 
-- [ ] Mege back to `master` as not process heavy
+- [x] Merge back to `master` as not process heavy ✔
 
 ## 🔨 🐛 Bugfixes
 
@@ -12,7 +12,7 @@ All clean 🌟 ✅
 
 - [ ] Widgets
 
-  - [ ] Get volume widget going again
+  - [x] Get volume widget going again
   - [ ] Create update number widget (`checkupdates+aur`)
   - [ ] Create informant widget ❔
 

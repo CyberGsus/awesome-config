@@ -296,7 +296,6 @@ myvolumewidget = widgets.volume.build()
               )
             )
 
->>>>>>> dynamic-tags
 
           tagnames = {"🏠 HOME " , "🔘 MEDIA ", "TERM "}
           local function set_wallpaper(s)
@@ -414,6 +413,8 @@ myvolumewidget = widgets.volume.build()
                   systray,
                   separator(),
                   wifibar,
+                  separator(),
+                  myvolumewidget,
                   separator(),
                   netbar,
                   separator(),
@@ -1076,4 +1077,3 @@ myvolumewidget = widgets.volume.build()
                           end
                           )
                         -- }}}
->>>>>>> dynamic-tags
