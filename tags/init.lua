@@ -88,11 +88,19 @@ local function rename_tag(name)
 end
 
 
-local function search_tag(name)
+local function search_tag(name, fixed)
   local tags = awful.screen.focused().tags
-  for _, tag in pairs(tags) do
-    if tag.name:lower():match(name:lower()) then
-      return tag
+  if type(fixed) ~= 'boolean' then fixed = false end
+  local matcher = name
+  if fixed then matcher = name .. '%s*$' end
+  for _, tags in pairs({ awful.screen.focused().tags, static_tags }) do
+    for _, tag in pairs(tags) do
+      local match = tag.name:lower():match(name:lower())
+      -- local matcher = string.format('^%s%%s*$', check_tag(name))
+      local match_literal = tag.name:match(matcher)
+      if match then
+        return tag, match, match_literal
+      end
     end
   end
   return nil
@@ -109,25 +117,30 @@ local function move_to_tag()
       local t = search_tag(name)
       if not t then return end
       c:tags({t})
-      t:view_only()
+      -- t:view_only()
     end
   }
 end
 
 
-
 local function static(name)
   if not name or #name == 0 then return end
-  static_tags[#static_tags + 1] = name
-  awful.tag.add (
-    check_tag(name) .. ' ',
-    {
-      layout        = layouts.check(layout),
-      screen        = awful.screen.focused(),
-      icon          = icons.get_icon(name),
-      volatile      = false, -- delete when last client goes out
-    }
-    ):view_only()
+  local t = search_tag(name)
+  if t == nil or t.name ~= name then
+    t = awful.tag.add (
+      check_tag(name) .. ' ',
+      { 
+        layout        = layouts.check(layout),
+        screen        = awful.screen.focused(),
+        icon          = icons.get_icon(name),
+        volatile      = false, -- delete when last client goes out
+      }
+      )
+
+    static_tags[#static_tags + 1] = t
+    t:view_only()
+
+  end
 end
 
 local function pre_tags(list) -- - { name1, name2, name3 }
@@ -137,8 +150,7 @@ local function pre_tags(list) -- - { name1, name2, name3 }
   end
 end
 
-
-local function new_tag(name, layout)
+local function new_tag(name, goto_)
   -- name will only be modified on tag name, but
   -- icon (i hope) will still be matched through input
   -- tag name
@@ -151,16 +163,34 @@ local function new_tag(name, layout)
     return 
   end
 
-  local tag = awful.tag.add (
-    check_tag(name) .. ' ',
-    {
-      layout        = layouts.check(layout),
-      screen        = awful.screen.focused(),
-      icon          = icons.get_icon(name),
-      volatile      = true, -- delete when last client goes out
+  local tag, _, match = search_tag(name, true)
+  local f = io.open('/home/cyber/testtag', 'w')
+  f:write(tostring(match) .. '\n')
+  f:write(tostring(name) .. '\n')
+  f:close()
+  if tag == nil or not match:match(name .. '%s*$')  then
+
+
+    tag = awful.tag.add (
+      check_tag(name) .. ' ',
+      {
+        layout        = layouts.check(layout),
+        screen        = awful.screen.focused(),
+        icon          = icons.get_icon(name),
+        volatile      = true, -- delete when last client goes out
+      }
+      )
+  else
+    -- raise warning TODO warning here
+    naughty.notify {
+      title = '🚫 Try other name',
+      text = 'A tag named "' .. name .. '" already exists.\nMaybe you meant switching to it.',
+      preset = naughty.config.presets.low
     }
-    )
-  tag:view_only()
+  end
+  if goto_ == nil or goto_ == true then
+    tag:view_only()
+  end
   return tag
 end
 -- }}
@@ -175,7 +205,7 @@ local function delete_current()
   -- check if tag is in initial tags, if so, dont delete it
   for _, tag in pairs(awful.screen.focused().tags) do
     for _, name in pairs(static_tags) do
-      if name == tag then return end
+      if name == tag.name then return end
     end
   end
   t:delete()
@@ -215,13 +245,13 @@ local function move_to_new_tag()
       local c = client.focus
       if not c then
         naughty.notify {
-          title = "⚠ Please select a tag❗",
-          text = "Seriously! Please select a tag in order to \nbe able to move it 🥞",
-          preset = naught.config.presets.critical -- TODO: warning preset to say its user's fault
+          title = "⚠ Please select a client❗",
+          text = "Seriously! Please select a client in order to \nbe able to move it 🥞",
+          preset = naughty.config.presets.critical -- TODO: warning preset to say its user's fault
         }
         return 
       end -- no client focused
-      local t = new_tag(name)
+      local t = new_tag(name, false)
       if not t then return end -- tag not created, but notification was already sent
       c:tags({t})
 
@@ -229,25 +259,28 @@ local function move_to_new_tag()
   }
 end
 
+local function go_tag(name)
+  local t = search_tag(name)
+  -- if not found, raise a notification
+  if not t then 
+    naughty.notify {
+      title = "❗Cant find tag :❗💩",
+      text = string.format("🐷 Sorry, a tag named like \"%s\"could not\nbe found 🥞 ", name),
+      preset = naughty.config.presets.critical
+    }
+    t = current_tag()
+  end
+
+  t:view_only()
+
+
+end
+
 local function goTo()
   awful.prompt.run {
     prompt = "Go to tag: ",
     textbox = awful.screen.focused().mypromptbox.widget,
-    exe_callback = function (name)
-      local t = search_tag(name)
-      -- if not found, raise a notification
-      if not t then 
-        naughty.notify {
-          title = "❗Cant find tag :❗💩",
-          text = string.format("🐷 Sorry, a tag named like \"%s\"could not\nbe found 🥞 ", name),
-          preset = naughty.config.presets.critical
-        }
-        t = current_tag()
-      end
-
-      t:view_only()
-
-    end
+    exe_callback =  go_tag
   }
 end
 

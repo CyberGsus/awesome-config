@@ -6,8 +6,9 @@
 
 ## 🔨 🐛 Bugfixes
 
-- [ ] Fix tag duplication
-<!-- All clean 🌟 ✅ -->
+- [x] Fix tag duplication
+
+  All clean 🌟 ✅
 
 ## ➕ Addons
 
