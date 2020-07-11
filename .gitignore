@@ -63,7 +63,9 @@ Sessionx.vim
 .netrwhist
 *~
 # Auto-generated tag files
-tags
+# tags
+
+# !tags/*.lua
 # Persistent undo
 [._]*.un~
 
