@@ -132,7 +132,7 @@ myawesomemenu = {
     {"quit", function()
         awesome.quit()
       end},
-    { "poweroff", function() os.execute('poweroff') end, poweroff.icon() }
+      { "poweroff", function() os.execute('poweroff') end, poweroff.icon() }
     }
 
     mymainmenu =
@@ -157,9 +157,9 @@ myawesomemenu = {
     menubar.utils.terminal = terminal -- Set the terminal for applications that require it
     -- }}}
 
--- Keyboard map indicator and switcher
-mykeyboardlayout = widgets.keyboard.build()
-myvolumewidget = widgets.volume.build()
+    -- Keyboard map indicator and switcher
+    mykeyboardlayout = widgets.keyboard.build()
+    -- myvolumewidget = widgets.volume.build()
 
 
 
@@ -413,8 +413,8 @@ myvolumewidget = widgets.volume.build()
                   systray,
                   separator(),
                   wifibar,
-                  separator(),
-                  myvolumewidget,
+                  -- separator(),
+                  -- myvolumewidget,
                   separator(),
                   netbar,
                   separator(),
@@ -826,7 +826,7 @@ myvolumewidget = widgets.volume.build()
           -- Bind all key numbers to tags.
           -- Be careful: we use keycodes to make it work on any keyboard layout.
           -- This should map on the top row of your keyboard, usually 1 to 9.
-          for i = 1, #tagnames do
+          for i = 1, 9 do
             globalkeys =
             gears.table.join(
               globalkeys,
@@ -841,7 +841,7 @@ myvolumewidget = widgets.volume.build()
                     tag:view_only()
                   end
                 end,
-                {description = "view " .. tagnames[i], group = "tag"}
+                {description = "view tag #" .. i, group = "tag"}
                 ),
               -- Toggle tag display.
               awful.key(
@@ -854,7 +854,7 @@ myvolumewidget = widgets.volume.build()
                     awful.tag.viewtoggle(tag)
                   end
                 end,
-                {description = "toggle " .. tagnames[i], group = "tag"}
+                {description = "toggle tag #" .. i, group = "tag"}
                 ),
               -- Move client to tag.
               awful.key(
@@ -868,7 +868,7 @@ myvolumewidget = widgets.volume.build()
                     end
                   end
                 end,
-                {description = "move focused client to " .. tagnames[i], group = "tag"}
+                {description = "move focused client to tag #" .. i, group = "tag"}
                 ),
               -- Toggle tag on focused client.
               awful.key(
@@ -882,7 +882,7 @@ myvolumewidget = widgets.volume.build()
                     end
                   end
                 end,
-                {description = "toggle focused client on " .. tagnames[i], group = "tag"}
+                {description = "toggle focused client on tag #" .. i, group = "tag"}
                 )
               )
           end
