@@ -42,6 +42,7 @@ icons.matches('ctf', { icon = 'ctf.png', uppercase = true })
 -- when client with a matching name is opened:
 require("awful.hotkeys_popup.keys")
 
+local last_tag
 
 local widgets = require ("widgets")
 
@@ -816,9 +817,6 @@ myawesomemenu = {
               { modkey, },'g', tags.go_to_tag,
               { description = 'Go to tag by search', group = 'tag' }
               )
-
-            -- TODO: make 123456789 bind dyamically
-
 
             )
 

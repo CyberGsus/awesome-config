@@ -295,7 +295,10 @@ return {
   move_to_tag = move_to_tag,
   move_to_new_tag = move_to_new_tag,
   go_to_tag = goTo,
-  matches = icons.matches
+  matches = icons.matches,
+  backend = {
+    current_tag = current_tag,
+  },
   -- backend is a table with features that will not act from the frontend
   -- but should be accessible
 }
