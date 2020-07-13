@@ -401,6 +401,9 @@ myawesomemenu = {
                   s.mytaglist,
                   separator('right'),
                   s.mypromptbox,
+                  separator('right'),
+                  widgets.packages.build(),
+                  separator('right')
                 },
                 s.mytasklist, -- Middle widget
                 {

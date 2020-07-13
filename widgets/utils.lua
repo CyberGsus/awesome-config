@@ -43,58 +43,72 @@ end
 
 local color_toggle = true
 local function get_color(no_toggle)
--- local color
--- if color_toggle then
---   color = colors.primary[1]
--- else
---   color = colors.secondary[1]
--- end
--- if no_toggle ~= true then
---   color_toggle = not color_toggle
--- end
--- return alpha(color, 0.90)
-return alpha(colors.light[1], 0.5)
+  -- local color
+  -- if color_toggle then
+  --   color = colors.primary[1]
+  -- else
+  --   color = colors.secondary[1]
+  -- end
+  -- if no_toggle ~= true then
+  --   color_toggle = not color_toggle
+  -- end
+  -- return alpha(color, 0.90)
+  return alpha(colors.light[1], 0.5)
 end
 
 local function span(text, color)
-if color == nil then
-  color = get_color()
-end
-return string.format("<span foreground='%s' >%s</span>", color,
-text)
+  if color == nil then
+    color = get_color()
+  end
+  return string.format("<span foreground='%s' >%s</span>", color,
+    text)
 end
 
 local function set_interval(timeout, cb)
-local timer = gears.timer {
-  timeout = timeout,
-  call_now = true,
-  autostart = true,
-  callback = cb,
-}
-timer:start()
-return timer
+  local timer = gears.timer {
+    timeout = timeout,
+    call_now = true,
+    autostart = true,
+    callback = cb,
+  }
+  timer:start()
+  return timer
+end
+
+local function check_cmd_exists (arg)
+  if #arg < 1 then return false, '' end
+  local cmd = arg[1]
+  if arg[2] == true then 
+    cmd = cmd .. ' -h'
+  end
+  cmd = cmd .. ' 2>/dev/null'
+  local fd = io.popen(cmd) 
+  fd:read("*all")
+  local tbl = { fd:close() }
+  return tbl[3] ~= 127, cmd -- 127 is command not found
 end
 
 
 local function watch(sc,timeout, widget, cb)
-if cb == nil then cb = function(widg, out) end end
-return set_interval(timeout, function()
-  local fd = io.popen(sc)
-  if fd == nil then return false end -- failed, don't repeat
-  local out = fd:read("*all")
-  fd:close()
-  cb(widget, out)
-  return true
-end)
+  if cb == nil then cb = function(widg, out) end end
+  return set_interval(timeout, function()
+    local fd = io.popen(sc)
+    if fd == nil then return false end -- failed, don't repeat
+    local out = fd:read("*all")
+    fd:close()
+    cb(widget, out)
+    return true
+  end)
 end
 
 return {
-span = span,
-get_color = get_color,
-set_interval = set_interval,
-watch = watch,
-hsv2rgb = hsv2rgb,
-tbl2hex = tbl2hex,
-map = remap,
+  span = span,
+  get_color = get_color,
+  set_interval = set_interval,
+  watch = watch,
+  hsv2rgb = hsv2rgb,
+  tbl2hex = tbl2hex,
+  map = remap,
   hsv2hex = hsv2hex,
+  check_cmd_exists = check_cmd_exists,
 }
