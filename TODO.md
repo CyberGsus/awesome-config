@@ -15,7 +15,7 @@
 - [ ] Widgets
 
   - [x] Get volume widget going again
-  - [ ] Create update number widget (`checkupdates+aur`)
+  - [x] Create update number widget (`checkupdates+aur`)
   - [ ] Create a menu to toggle features in network status widget
   - [ ] Move wifi signal to network widget
   - [ ] Implement the wifi signal script in native lua
