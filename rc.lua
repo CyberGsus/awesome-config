@@ -780,8 +780,8 @@ myawesomemenu = {
           gears.table.join(
             globalkeys,
             -- Launch discord
-            launch({modkey}, "d", "/opt/Discord/Discord", "discord"),
-            launch({modkey}, "b", "firefox", "browser"), -- NOTE: may change this to a custom function that finds browsers and prompts
+            launch({modkey}, "d", "discord", "discord"),
+            launch({modkey}, "b", "brave", "browser"), -- NOTE: may change this to a custom function that finds browsers and prompts
             launch({"Shift"}, "Print", terminal .. "mate-screenshot -i", "screenshot dialog")
             )
 
