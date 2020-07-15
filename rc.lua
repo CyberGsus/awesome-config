@@ -781,7 +781,7 @@ myawesomemenu = {
             globalkeys,
             -- Launch discord
             launch({modkey}, "d", "discord", "discord"),
-            launch({modkey}, "b", "brave", "browser"), -- NOTE: may change this to a custom function that finds browsers and prompts
+            launch({modkey}, "b", "opera", "browser"), -- NOTE: may change this to a custom function that finds browsers and prompts
             launch({"Shift"}, "Print", terminal .. "mate-screenshot -i", "screenshot dialog")
             )
 
