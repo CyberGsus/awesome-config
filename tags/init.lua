@@ -164,10 +164,6 @@ local function new_tag(name, goto_)
   end
 
   local tag, _, match = search_tag(name, true)
-  local f = io.open('/home/cyber/testtag', 'w')
-  f:write(tostring(match) .. '\n')
-  f:write(tostring(name) .. '\n')
-  f:close()
   if tag == nil or not match:match(name .. '%s*$')  then
 
 
