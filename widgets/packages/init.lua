@@ -42,7 +42,7 @@ local function build(max_threshold)
       local span = utils.span(' ' .. output, color)
       widget:set_markup_silently(span) -- hmm... looks like span not getting into widget
     end
-    utils.watch('checkupates | wc -l', 30 * 60, widg, callback)
+    utils.watch('checkupdates | wc -l', 30 * 60, widg, callback)
   end
 
   built_widget =  wibox.widget {
