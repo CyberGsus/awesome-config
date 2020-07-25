@@ -64,11 +64,12 @@ local function span(text, color)
     text)
 end
 
-local function set_interval(timeout, cb)
+local function set_interval(timeout, cb, autostart)
+  if type(autostart) ~= 'boolean' then autostart = true end
   local timer = gears.timer {
     timeout = timeout,
     call_now = true,
-    autostart = true,
+    autostart = autostart,
     callback = cb,
   }
   timer:start()
@@ -89,7 +90,8 @@ local function check_cmd_exists (arg)
 end
 
 
-local function watch(sc,timeout, widget, cb)
+local function watch(sc,timeout, widget, cb, options)
+  if type(optiona) ~= 'table' then options = {  } end
   if cb == nil then cb = function(widg, out) end end
   return set_interval(timeout, function()
     local fd = io.popen(sc)
@@ -98,7 +100,7 @@ local function watch(sc,timeout, widget, cb)
     fd:close()
     cb(widget, out)
     return true
-  end)
+  end, options[autostart])
 end
 
 return {
