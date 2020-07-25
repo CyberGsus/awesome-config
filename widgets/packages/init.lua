@@ -16,6 +16,7 @@ local colors = require 'themes'.get_colors()
 
 local built_widget
 
+-- overhead is here
 local function build(max_threshold)
   max_threshold = max_threshold or 200
   local image_path = string.format('%s/.config/awesome/widgets/packages/update.svg', os.getenv('HOME'))
@@ -27,11 +28,8 @@ local function build(max_threshold)
 
   local callback = function () return 'N/A' end
 
-  if utils.check_cmd_exists { 'checkupdates -h' } and utils.check_cmd_exists { 'wc -h'} then
+  if  utils.check_cmd_exists { 'pacman -Qh' } then
     local cmd = 'checkupdates'
-    -- if utils.check_cmd_exists { 'checkupdates+aur -h' } then
-    --   cmd = 'checkupdates+aur'
-    -- end
     callback = function (widget, output)
       local hue = 0
       output = tonumber(output) or -1 + 1
@@ -42,7 +40,8 @@ local function build(max_threshold)
       local span = utils.span(' ' .. output, color)
       widget:set_markup_silently(span)
     end
-    utils.watch('checkupdates | wc -l', 30 * 60, widg, callback, { autostart = false })
+    -- overhead here
+    utils.watch('trizen -Qu | wc -l', 30 * 60, widg, callback, { autostart = false })
   end
 
   built_widget =  wibox.widget {

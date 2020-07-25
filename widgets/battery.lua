@@ -74,7 +74,7 @@ local exports = {
       local fg = utils.tbl2hex(utils.hsv2rgb((info.current or 0) / 360, 1, 1))
       -- fg = color
       widg:set_markup_silently(string.format("%s %s%%", icon, utils.span(info.current, fg)))
-    end)
+    end, false)
 
 
     widg:connect_signal(

@@ -68,9 +68,9 @@ local function set_interval(timeout, cb, autostart)
   if type(autostart) ~= 'boolean' then autostart = true end
   local timer = gears.timer {
     timeout = timeout,
-    call_now = true,
+    call_now = autostart,
     autostart = autostart,
-    callback = cb,
+    callback = cb
   }
   timer:start()
   return timer
@@ -91,7 +91,7 @@ end
 
 
 local function watch(sc,timeout, widget, cb, options)
-  if type(optiona) ~= 'table' then options = {  } end
+  if type(options) ~= 'table' then options = {  } end
   if cb == nil then cb = function(widg, out) end end
   return set_interval(timeout, function()
     local fd = io.popen(sc)
