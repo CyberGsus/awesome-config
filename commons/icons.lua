@@ -24,10 +24,13 @@ icons.themes_path = function()
   return string.format('%s/.config/awesome/themes/', os.getenv('HOME'))
 end
 
-icons.aw_icon = function(size, fg, bg, theme_name, themes_dir)
-  os.execute(string.format("sh ~/.config/awesome/commons/update-icon.sh \"%s\" \"%s\" \"%s\" \"%s\"",
-    theme_name, size, fg, bg
-  ))
+icons.aw_icon = function(size, fg, bg, theme_name, themes_dir, options)
+  if type(options) ~= 'table' then options = { reload = true } end
+  if options[reload] then
+    os.execute(string.format("sh ~/.config/awesome/commons/update-icon.sh \"%s\" \"%s\" \"%s\" \"%s\"",
+        theme_name, size, fg, bg
+      ))
+  end
   return  themes_dir  .. theme_name .. '/' .. 'awesome-icon.png'
 end
 
@@ -39,7 +42,7 @@ icons.asset = function(asset_fmt, asset_name, asset_type)
   if asset_fmt == 'png' then
     asset_name = asset_name .. '@2'
   end
-  
+
   return theme_icons .. asset_name .. '.' .. asset_fmt
 end
 

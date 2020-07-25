@@ -40,7 +40,7 @@ local function build(max_threshold)
       end
       local color = utils.hsv2hex(hue, 1, 1)
       local span = utils.span(' ' .. output, color)
-      widget:set_markup_silently(span) -- hmm... looks like span not getting into widget
+      widget:set_markup_silently(span)
     end
     utils.watch('checkupdates | wc -l', 30 * 60, widg, callback, { autostart = false })
   end

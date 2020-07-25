@@ -259,7 +259,7 @@ local function wifi_signal(timeout)
   local color = utils.get_color()
   local timer = utils.watch(string.format("%s %s", 'sh', script('internet')), timeout or 3, widg, function(widget, output)
     widg:set_markup_silently(utils.span(output, color))
-  end)
+  end, { autostart = false })
   -- local widg = awful.widget.watch(string.format("%s %s", 'sh', script('internet')), timeout or 3)
   -- Adapted from LukeSmithxyz/voidrice/.local/bin/statusbar/internet
   widg:connect_signal('button::press', function(lx, ly, _, button)
