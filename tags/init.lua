@@ -164,7 +164,7 @@ local function new_tag(name, goto_)
   end
 
   local tag, _, match = search_tag(name, true)
-  if tag == nil or not match:match(name .. '%s*$')  then
+  if tag == nil or match == nil or not match:match(name .. '%s*$')  then
 
 
     tag = awful.tag.add (
